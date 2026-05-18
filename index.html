@@ -866,6 +866,10 @@ function seedDemo(){
     { id:'INC-DEMO02', cat:'แอร์', pri:'เร่งด่วน', title:'แอร์ไม่เย็น', detail:'เครื่องปรับอากาศในห้องพักทำงานแต่ไม่เย็น อุณหภูมิตั้ง 18 แต่ไม่รู้สึกเย็นเลย', room:'502', guest:'Ms. Sarah Johnson', status:'in-progress', date:'18/5/2569 10:15', ts:now-1800000 },
     { id:'INC-DEMO03', cat:'อินเทอร์เน็ต', pri:'ปกติ', title:'WiFi ช้ามาก', detail:'สัญญาณ WiFi ในห้องช้ามากใช้งานไม่ได้ รหัส GRAND-PALACE ไม่สามารถโหลดเว็บได้', room:'301', guest:'คุณวีระ สมใจ', status:'resolved', date:'17/5/2569 14:00', ts:now-86400000 }
   ]);
+
+if (typeof window.uploadIncidentToFirebase === 'function') {
+    window.uploadIncidentToFirebase(cat, pri, title, detail);
+}
 }
 seedDemo();
 
