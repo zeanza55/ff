@@ -888,11 +888,22 @@ seedDemo();
     messagingSenderId: "646774389909",
     appId: "1:646774389909:web:949776d417b90652ea2f9c",
     measurementId: "G-XZQQK06KNQ"
+    
   };
+  
 
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);
   const analytics = getAnalytics(app);
+  const database = getDatabase(app); // <-- เพิ่มบรรทัดนี้ เพื่อสร้างตัวแปรฐานข้อมูลไปใช้งาน
+  // ดึงข้อมูลมาแสดงทันทีเมื่อมีการเปลี่ยนแปลงในฐานข้อมูล
+  const chatRef = ref(database, 'chats');
+  onValue(chatRef, (snapshot) => {
+  const data = snapshot.val();
+  console.log("ข้อมูลล่าสุดจาก Firebase:", data);
+  // เอาข้อมูล data ที่ได้ไปวนลูปเพื่อ Render แสดงบนหน้าจอต่อได้เลย
+});
+    
 </script>
 </body>
 </html>
