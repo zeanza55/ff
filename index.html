@@ -423,7 +423,7 @@ body{font-family:'Jost',sans-serif;background:var(--dark);color:var(--white);min
   </div>
 </div>
 
-<scrip>
+<script>
 // ===== DATA LAYER =====
 const DB = {
   get(k){ try{ return JSON.parse(localStorage.getItem(k))||null }catch(e){return null} },
@@ -869,7 +869,6 @@ function seedDemo(){
 }
 seedDemo();
 
-// ===== SEED DEMO DATA =====
 function seedDemo(){
   if(DB.incidents().length > 0) return;
   const guests = DB.guests();
