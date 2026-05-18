@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grand Palace Hotel — Incident Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold:#C9A84C; --gold-light:#E8D5A3; --gold-pale:#F7F0DC;
+  --dark:#0A0A0A; --dark2:#141414; --dark3:#1E1E1E; --dark4:#252525;
+  --gray:#6B6B6B; --off:#F9F6F0; --white:#FFFFFF;
+  --red:#C0392B; --green:#1A6B3C;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Jost',sans-serif;background:var(--dark);color:var(--white);min-height:100vh;overflow-x:hidden;}
+.screen{display:none;min-height:100vh;}
+.screen.active{display:flex;flex-direction:column;}
+
+/* LANDING */
+#landing{align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.land-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% -10%,rgba(201,168,76,.14) 0%,transparent 60%);pointer-events:none;}
+.land-grid{position:absolute;inset:0;background-image:repeating-linear-gradient(0deg,transparent,transparent 79px,rgba(201,168,76,.05) 80px),repeating-linear-gradient(90deg,transparent,transparent 79px,rgba(201,168,76,.05) 80px);pointer-events:none;}
+.land-box{position:relative;z-index:2;text-align:center;max-width:680px;padding:40px 24px;}
+.crown{font-size:52px;display:block;margin-bottom:16px;filter:drop-shadow(0 0 24px rgba(201,168,76,.5));}
+.hotel-name{font-family:'Cormorant Garamond',serif;font-size:clamp(32px,6vw,60px);font-weight:300;letter-spacing:.14em;color:var(--gold);text-transform:uppercase;line-height:1.1;}
+.hotel-tag{font-size:11px;letter-spacing:.4em;color:var(--gold-light);opacity:.6;margin-top:6px;text-transform:uppercase;}
+.divider{width:80px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:22px auto;}
+.land-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-style:italic;color:var(--off);margin-bottom:6px;}
+.land-sub{font-size:13px;color:var(--gray);margin-bottom:44px;}
+.role-row{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;}
+.role-card{width:190px;background:var(--dark2);border:1px solid rgba(201,168,76,.2);padding:28px 20px;cursor:pointer;transition:all .3s;position:relative;overflow:hidden;text-align:center;}
+.role-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);transform:scaleX(0);transition:.3s;}
+.role-card:hover{border-color:var(--gold);transform:translateY(-5px);box-shadow:0 16px 40px rgba(201,168,76,.15);}
+.role-card:hover::before{transform:scaleX(1);}
+.role-icon{font-size:34px;margin-bottom:12px;display:block;}
+.role-title{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold);margin-bottom:5px;}
+.role-desc{font-size:12px;color:var(--gray);line-height:1.6;}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.85);align-items:center;justify-content:center;padding:20px;}
+.overlay.open{display:flex;}
+.modal{background:var(--dark2);border:1px solid rgba(201,168,76,.3);padding:36px;width:100%;max-width:420px;position:relative;animation:mIn .25s ease;}
+@keyframes mIn{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
+.m-close{position:absolute;top:14px;right:16px;background:none;border:none;color:var(--gray);font-size:18px;cursor:pointer;transition:.2s;}
+.m-close:hover{color:var(--gold);}
+.m-title{font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--gold);margin-bottom:3px;}
+.m-sub{font-size:12px;color:var(--gray);margin-bottom:24px;letter-spacing:.04em;}
+.fg{margin-bottom:18px;}
+.flabel{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-light);opacity:.8;margin-bottom:7px;}
+.finput,.fselect,.ftextarea{width:100%;background:var(--dark3);border:1px solid rgba(255,255,255,.09);color:var(--white);padding:11px 14px;font-family:'Jost',sans-serif;font-size:14px;transition:.2s;outline:none;}
+.finput:focus,.fselect:focus,.ftextarea:focus{border-color:var(--gold);}
+.finput::placeholder{color:rgba(255,255,255,.2);}
+.ftextarea{resize:vertical;min-height:90px;line-height:1.6;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 24px;font-family:'Jost',sans-serif;font-size:12px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;border:none;transition:.25s;font-weight:500;}
+.btn-gold{background:var(--gold);color:var(--dark);}
+.btn-gold:hover{background:var(--gold-light);}
+.btn-outline{background:transparent;border:1px solid var(--gold);color:var(--gold);}
+.btn-outline:hover{background:rgba(201,168,76,.1);}
+.btn-sm{padding:7px 14px;font-size:11px;}
+.btn-danger{background:var(--red);color:#fff;}
+.btn-danger:hover{background:#a93226;}
+.btn-full{width:100%;}
+.m-actions{display:flex;gap:10px;margin-top:6px;}
+.m-switch{text-align:center;margin-top:18px;font-size:13px;color:var(--gray);}
+.lk{color:var(--gold);cursor:pointer;text-decoration:underline;text-decoration-color:rgba(201,168,76,.35);}
+.errmsg{color:#e74c3c;font-size:12px;margin-top:7px;}
+.okmsg{color:#2ecc71;font-size:12px;margin-top:7px;}
+
+/* HEADER */
+.app-hdr{background:var(--dark2);border-bottom:1px solid rgba(201,168,76,.18);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;flex-shrink:0;}
+.hdr-brand{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);letter-spacing:.1em;}
+.hdr-brand span{display:block;font-size:10px;color:var(--gray);letter-spacing:.2em;text-transform:uppercase;font-family:'Jost',sans-serif;}
+.hdr-right{display:flex;align-items:center;gap:14px;}
+.ubadge{font-size:12px;color:var(--gold-light);background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.2);padding:4px 12px;}
+.btn-out{background:none;border:1px solid rgba(255,255,255,.1);color:var(--gray);padding:6px 13px;font-size:11px;letter-spacing:.1em;cursor:pointer;transition:.2s;font-family:'Jost',sans-serif;text-transform:uppercase;}
+.btn-out:hover{border-color:var(--red);color:var(--red);}
+
+/* TABS */
+.tabnav{display:flex;border-bottom:1px solid rgba(201,168,76,.13);padding:0 28px;background:var(--dark2);flex-shrink:0;}
+.tabbt{padding:14px 22px;background:none;border:none;color:var(--gray);font-family:'Jost',sans-serif;font-size:12px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;border-bottom:2px solid transparent;transition:.2s;margin-bottom:-1px;}
+.tabbt.on{color:var(--gold);border-bottom-color:var(--gold);}
+.tabbt:hover:not(.on){color:var(--gold-light);}
+
+/* CONTENT */
+.main{flex:1;padding:28px;max-width:1100px;margin:0 auto;width:100%;}
+.ptitle{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:300;color:var(--gold);margin-bottom:4px;letter-spacing:.04em;}
+.psub{font-size:13px;color:var(--gray);margin-bottom:28px;}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-bottom:28px;}
+.stat-card{background:var(--dark2);border:1px solid rgba(201,168,76,.13);padding:18px 20px;position:relative;overflow:hidden;}
+.stat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--gold);opacity:.25;}
+.stat-lbl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gray);margin-bottom:7px;}
+.stat-val{font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:300;color:var(--gold);line-height:1;}
+.stat-card.red .stat-val{color:#e74c3c;}
+.stat-card.grn .stat-val{color:#2ecc71;}
+
+/* INCIDENT CARDS */
+.inc-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
+.filter-row{display:flex;gap:7px;flex-wrap:wrap;}
+.flt{padding:5px 13px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;background:none;border:1px solid rgba(255,255,255,.09);color:var(--gray);cursor:pointer;font-family:'Jost',sans-serif;transition:.2s;}
+.flt.on,.flt:hover{border-color:var(--gold);color:var(--gold);}
+.inc-list{display:flex;flex-direction:column;gap:14px;}
+.icard{background:var(--dark2);border:1px solid rgba(255,255,255,.06);padding:18px 22px;transition:.2s;position:relative;}
+.icard:hover{border-color:rgba(201,168,76,.25);}
+.icard.urg{border-left:3px solid var(--red);}
+.icard.res{border-left:3px solid var(--green);opacity:.7;}
+.icard.pend{border-left:3px solid var(--gold);}
+.itop{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px;}
+.iid{font-size:10px;letter-spacing:.18em;color:var(--gray);text-transform:uppercase;}
+.ititle{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--off);margin-top:2px;}
+.badge{font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;white-space:nowrap;}
+.badge-urg{background:rgba(192,57,43,.2);color:#e74c3c;border:1px solid rgba(192,57,43,.3);}
+.badge-pend{background:rgba(201,168,76,.13);color:var(--gold);border:1px solid rgba(201,168,76,.25);}
+.badge-res{background:rgba(26,107,60,.2);color:#2ecc71;border:1px solid rgba(26,107,60,.3);}
+.imeta{display:flex;gap:14px;font-size:12px;color:var(--gray);margin-bottom:8px;flex-wrap:wrap;}
+.idesc{font-size:13px;color:rgba(255,255,255,.45);line-height:1.6;margin-bottom:12px;}
+.iacts{display:flex;gap:8px;flex-wrap:wrap;}
+
+/* REPORT FORM */
+.rform{background:var(--dark2);border:1px solid rgba(201,168,76,.18);padding:32px;max-width:620px;}
+.cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:4px;}
+.cat-btn{padding:11px 6px;background:var(--dark3);border:1px solid rgba(255,255,255,.07);color:var(--gray);cursor:pointer;font-size:12px;font-family:'Jost',sans-serif;text-align:center;transition:.2s;letter-spacing:.04em;}
+.cat-btn .ci{display:block;font-size:20px;margin-bottom:3px;}
+.cat-btn.sel,.cat-btn:hover{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,.07);}
+.pri-row{display:flex;gap:9px;}
+.pri-btn{flex:1;padding:9px;background:var(--dark3);border:1px solid rgba(255,255,255,.07);color:var(--gray);cursor:pointer;font-size:11px;font-family:'Jost',sans-serif;letter-spacing:.1em;text-transform:uppercase;transition:.2s;text-align:center;}
+.pri-btn.sel{border-color:var(--gold);color:var(--gold);}
+.pri-btn.urg-sel{border-color:var(--red);color:var(--red);background:rgba(192,57,43,.1);}
+
+/* CHAT */
+.chat-layout{display:grid;grid-template-columns:260px 1fr;height:calc(100vh - 120px);}
+.chat-list{border-right:1px solid rgba(201,168,76,.13);overflow-y:auto;}
+.cl-hdr{padding:14px 18px;border-bottom:1px solid rgba(201,168,76,.1);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);}
+.ci-item{padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:.2s;}
+.ci-item:hover,.ci-item.on{background:rgba(201,168,76,.06);}
+.ci-name{font-size:13px;color:var(--off);margin-bottom:2px;}
+.ci-sub{font-size:11px;color:var(--gray);}
+.unread{float:right;background:var(--gold);color:var(--dark);font-size:10px;width:17px;height:17px;border-radius:50%;text-align:center;line-height:17px;}
+.chat-win{display:flex;flex-direction:column;}
+.cwin-hdr{padding:14px 22px;border-bottom:1px solid rgba(201,168,76,.1);background:var(--dark2);flex-shrink:0;}
+.cwin-name{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);}
+.cwin-sub{font-size:11px;color:var(--gray);}
+.cmessages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:13px;}
+.cmsg{max-width:72%;}
+.cmsg.mine{align-self:flex-end;}
+.cmsg.theirs{align-self:flex-start;}
+.cbubble{padding:9px 14px;font-size:13px;line-height:1.6;color:var(--off);}
+.cmsg.mine .cbubble{background:rgba(201,168,76,.18);border:1px solid rgba(201,168,76,.28);}
+.cmsg.theirs .cbubble{background:var(--dark3);border:1px solid rgba(255,255,255,.07);}
+.ctime{font-size:10px;color:var(--gray);margin-top:3px;text-align:right;}
+.cmsg.theirs .ctime{text-align:left;}
+.cinput-row{padding:14px 22px;border-top:1px solid rgba(201,168,76,.1);display:flex;gap:9px;flex-shrink:0;}
+.cinput{flex:1;background:var(--dark3);border:1px solid rgba(255,255,255,.09);color:var(--white);padding:9px 14px;font-family:'Jost',sans-serif;font-size:13px;outline:none;}
+.cinput:focus{border-color:var(--gold);}
+.chat-empty{flex:1;display:flex;align-items:center;justify-content:center;color:var(--gray);font-size:14px;font-style:italic;font-family:'Cormorant Garamond',serif;}
+
+/* DETAIL PANEL */
+.dpanel{display:none;position:fixed;top:0;right:0;bottom:0;width:460px;z-index:80;background:var(--dark2);border-left:1px solid rgba(201,168,76,.18);flex-direction:column;box-shadow:-8px 0 32px rgba(0,0,0,.4);}
+.dpanel.open{display:flex;}
+.dp-hdr{padding:22px 26px;border-bottom:1px solid rgba(201,168,76,.12);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.dp-body{flex:1;overflow-y:auto;padding:26px;}
+.dp-sec{margin-bottom:22px;}
+.dp-sec-t{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:9px;}
+.dp-f{margin-bottom:10px;}
+.dp-fl{font-size:11px;color:var(--gray);margin-bottom:2px;}
+.dp-fv{font-size:14px;color:var(--off);}
+.dp-chat{border-top:1px solid rgba(201,168,76,.1);padding:18px 26px;flex-shrink:0;}
+.mini-msgs{max-height:180px;overflow-y:auto;display:flex;flex-direction:column;gap:9px;margin-bottom:10px;}
+.sel-status{background:var(--dark3);border:1px solid rgba(255,255,255,.09);color:var(--white);padding:8px 12px;font-family:'Jost',sans-serif;font-size:13px;cursor:pointer;outline:none;width:100%;margin-top:10px;}
+.sel-status:focus{border-color:var(--gold);}
+
+/* NOTIFICATION */
+.notif{position:fixed;top:72px;right:22px;background:var(--dark2);border:1px solid rgba(201,168,76,.4);padding:13px 18px;font-size:13px;color:var(--gold-light);z-index:200;animation:nIn .3s ease;max-width:300px;box-shadow:0 8px 24px rgba(0,0,0,.4);}
+@keyframes nIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
+
+/* EMPTY */
+.empty{text-align:center;padding:56px 20px;}
+.empty-ic{font-size:38px;opacity:.18;margin-bottom:10px;}
+.empty-t{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gray);margin-bottom:6px;}
+.empty-s{font-size:13px;color:rgba(255,255,255,.18);}
+
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:var(--dark);}
+::-webkit-scrollbar-thumb{background:rgba(201,168,76,.3);}
+::-webkit-scrollbar-thumb:hover{background:var(--gold);}
+</style>
+</head>
+<body>
+
+<!-- LANDING -->
+<div id="landing" class="screen active">
+  <div class="land-bg"></div>
+  <div class="land-grid"></div>
+  <div class="land-box">
+    <span class="crown">♛</span>
+    <div class="hotel-name">Grand Palace Hotel</div>
+    <div class="hotel-tag">Since 1927 · Excellence in Hospitality</div>
+    <div class="divider"></div>
+    <div class="land-title">Incident Management System</div>
+    <div class="land-sub">ระบบรายงานและติดตามเหตุการณ์ภายในโรงแรม</div>
+    <div class="role-row">
+      <div class="role-card" onclick="openOverlay('ov-guest-login')">
+        <span class="role-icon">🏨</span>
+        <div class="role-title">Guest</div>
+        <div class="role-desc">ผู้พักอาศัย<br>รายงานเหตุการณ์ ติดตามสถานะ</div>
+      </div>
+      <div class="role-card" onclick="openOverlay('ov-staff-login')">
+        <span class="role-icon">👤</span>
+        <div class="role-title">Staff</div>
+        <div class="role-desc">เจ้าหน้าที่โรงแรม<br>จัดการเหตุการณ์ ติดต่อแขก</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GUEST LOGIN -->
+<div id="ov-guest-login" class="overlay">
+  <div class="modal">
+    <button class="m-close" onclick="closeOverlay('ov-guest-login')">✕</button>
+    <div class="m-title">Guest Login</div>
+    <div class="m-sub">เข้าสู่ระบบด้วยหมายเลขห้องและรหัสผ่าน</div>
+    <div class="fg"><label class="flabel">หมายเลขห้อง</label><input id="gl-room" class="finput" placeholder="เช่น 301"></div>
+    <div class="fg"><label class="flabel">รหัสผ่าน</label><input id="gl-pass" class="finput" type="password" placeholder="รหัสผ่าน"></div>
+    <div id="gl-msg"></div>
+    <div class="m-actions"><button class="btn btn-gold btn-full" onclick="guestLogin()">เข้าสู่ระบบ</button></div>
+    <div class="m-switch">ยังไม่มีบัญชี? <span class="lk" onclick="swOv('ov-guest-login','ov-guest-reg')">ลงทะเบียน</span></div>
+  </div>
+</div>
+
+<!-- GUEST REGISTER -->
+<div id="ov-guest-reg" class="overlay">
+  <div class="modal">
+    <button class="m-close" onclick="closeOverlay('ov-guest-reg')">✕</button>
+    <div class="m-title">Guest Register</div>
+    <div class="m-sub">สร้างบัญชีสำหรับผู้พักอาศัย</div>
+    <div class="fg"><label class="flabel">ชื่อ-นามสกุล</label><input id="gr-name" class="finput" placeholder="ชื่อเต็ม"></div>
+    <div class="fg"><label class="flabel">หมายเลขห้อง</label><input id="gr-room" class="finput" placeholder="หมายเลขห้องที่เช็คอิน"></div>
+    <div class="fg"><label class="flabel">รหัสผ่าน</label><input id="gr-pass" class="finput" type="password" placeholder="อย่างน้อย 4 ตัวอักษร"></div>
+    <div id="gr-msg"></div>
+    <div class="m-actions"><button class="btn btn-gold btn-full" onclick="guestReg()">ลงทะเบียน</button></div>
+    <div class="m-switch">มีบัญชีแล้ว? <span class="lk" onclick="swOv('ov-guest-reg','ov-guest-login')">เข้าสู่ระบบ</span></div>
+  </div>
+</div>
+
+<!-- STAFF LOGIN -->
+<div id="ov-staff-login" class="overlay">
+  <div class="modal">
+    <button class="m-close" onclick="closeOverlay('ov-staff-login')">✕</button>
+    <div class="m-title">Staff Login</div>
+    <div class="m-sub">เข้าสู่ระบบด้วยรหัสประจำตัวเจ้าหน้าที่</div>
+    <div class="fg"><label class="flabel">รหัสประจำตัว</label><input id="sl-id" class="finput" placeholder="เช่น STAFF001"></div>
+    <div class="fg"><label class="flabel">รหัสผ่าน</label><input id="sl-pass" class="finput" type="password" placeholder="รหัสผ่าน"></div>
+    <div id="sl-msg"></div>
+    <div class="m-actions"><button class="btn btn-gold btn-full" onclick="staffLogin()">เข้าสู่ระบบ</button></div>
+    <div class="m-switch" style="font-size:11px;color:var(--gray)">ทดสอบ: STAFF001 / 1234 &nbsp;|&nbsp; STAFF002 / 1234</div>
+  </div>
+</div>
+
+<!-- GUEST APP -->
+<div id="guest-app" class="screen">
+  <header class="app-hdr">
+    <div class="hdr-brand">Grand Palace Hotel <span>Guest Portal</span></div>
+    <div class="hdr-right">
+      <div class="ubadge" id="g-hdr-name"></div>
+      <button class="btn-out" onclick="logout()">ออกจากระบบ</button>
+    </div>
+  </header>
+  <nav class="tabnav">
+    <button class="tabbt on" onclick="gTab('report',this)">รายงานเหตุการณ์</button>
+    <button class="tabbt" onclick="gTab('history',this)">ประวัติการรายงาน</button>
+    <button class="tabbt" onclick="gTab('chat',this)">ข้อความ <span id="g-unread" style="display:none;background:var(--gold);color:var(--dark);font-size:10px;padding:1px 6px;border-radius:8px;margin-left:3px;"></span></button>
+  </nav>
+
+  <!-- REPORT TAB -->
+  <div id="gtab-report" class="main">
+    <div class="ptitle">รายงานเหตุการณ์</div>
+    <div class="psub">กรุณากรอกรายละเอียดเหตุการณ์ที่ต้องการรายงาน</div>
+    <div class="rform">
+      <div class="fg">
+        <label class="flabel">ประเภทเหตุการณ์</label>
+        <div class="cat-grid">
+          <div class="cat-btn" onclick="selCat(this,'ระบบไฟฟ้า')"><span class="ci">⚡</span>ระบบไฟฟ้า</div>
+          <div class="cat-btn" onclick="selCat(this,'ระบบน้ำ')"><span class="ci">💧</span>ระบบน้ำ</div>
+          <div class="cat-btn" onclick="selCat(this,'แอร์')"><span class="ci">❄️</span>แอร์</div>
+          <div class="cat-btn" onclick="selCat(this,'อินเทอร์เน็ต')"><span class="ci">📶</span>อินเทอร์เน็ต</div>
+          <div class="cat-btn" onclick="selCat(this,'ความปลอดภัย')"><span class="ci">🔒</span>ความปลอดภัย</div>
+          <div class="cat-btn" onclick="selCat(this,'ทำความสะอาด')"><span class="ci">🧹</span>ทำความสะอาด</div>
+          <div class="cat-btn" onclick="selCat(this,'อาหาร/เครื่องดื่ม')"><span class="ci">🍽️</span>อาหาร</div>
+          <div class="cat-btn" onclick="selCat(this,'ของสูญหาย')"><span class="ci">🔍</span>ของสูญหาย</div>
+          <div class="cat-btn" onclick="selCat(this,'อื่นๆ')"><span class="ci">📋</span>อื่นๆ</div>
+        </div>
+        <input type="hidden" id="inc-cat">
+      </div>
+      <div class="fg">
+        <label class="flabel">ระดับความเร่งด่วน</label>
+        <div class="pri-row">
+          <div class="pri-btn" onclick="selPri(this,'ปกติ')">ปกติ</div>
+          <div class="pri-btn" onclick="selPri(this,'เร่งด่วน')">เร่งด่วน</div>
+          <div class="pri-btn" onclick="selPri(this,'ฉุกเฉิน')" style="border-color:rgba(192,57,43,.25)">🚨 ฉุกเฉิน</div>
+        </div>
+        <input type="hidden" id="inc-pri">
+      </div>
+      <div class="fg"><label class="flabel">หัวเรื่อง</label><input id="inc-title" class="finput" placeholder="สรุปปัญหาโดยย่อ"></div>
+      <div class="fg"><label class="flabel">รายละเอียด</label><textarea id="inc-detail" class="ftextarea" placeholder="อธิบายเหตุการณ์โดยละเอียด เช่น ตำแหน่ง เวลา สิ่งที่พบเห็น..."></textarea></div>
+      <div id="rpt-msg"></div>
+      <button class="btn btn-gold" onclick="submitReport()" style="margin-top:6px;">ส่งรายงาน</button>
+    </div>
+  </div>
+
+  <!-- HISTORY TAB -->
+  <div id="gtab-history" class="main" style="display:none;">
+    <div class="ptitle">ประวัติการรายงาน</div>
+    <div class="psub">รายการเหตุการณ์ที่คุณได้รายงานไว้</div>
+    <div id="g-history-list" class="inc-list"></div>
+  </div>
+
+  <!-- GUEST CHAT TAB -->
+  <div id="gtab-chat" style="display:none;flex:1;">
+    <div class="chat-layout" style="height:calc(100vh - 120px);">
+      <div class="chat-list">
+        <div class="cl-hdr">การสนทนากับเจ้าหน้าที่</div>
+        <div id="g-chat-list"></div>
+      </div>
+      <div class="chat-win" id="g-chat-win">
+        <div class="chat-empty">เลือกการสนทนา</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STAFF APP -->
+<div id="staff-app" class="screen">
+  <header class="app-hdr">
+    <div class="hdr-brand">Grand Palace Hotel <span>Staff Dashboard</span></div>
+    <div class="hdr-right">
+      <div class="ubadge" id="s-hdr-name"></div>
+      <button class="btn-out" onclick="logout()">ออกจากระบบ</button>
+    </div>
+  </header>
+  <nav class="tabnav">
+    <button class="tabbt on" onclick="sTab('incidents',this)">เหตุการณ์ทั้งหมด</button>
+    <button class="tabbt" onclick="sTab('chat',this)">แชทกับแขก <span id="s-unread" style="display:none;background:var(--gold);color:var(--dark);font-size:10px;padding:1px 6px;border-radius:8px;margin-left:3px;"></span></button>
+  </nav>
+
+  <!-- INCIDENTS TAB -->
+  <div id="stab-incidents" class="main">
+    <div class="ptitle">เหตุการณ์ทั้งหมด</div>
+    <div class="psub">ภาพรวมและรายละเอียดเหตุการณ์ที่รายงานเข้ามา</div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-lbl">ทั้งหมด</div><div class="stat-val" id="st-total">0</div></div>
+      <div class="stat-card red"><div class="stat-lbl">รอดำเนินการ</div><div class="stat-val" id="st-pend">0</div></div>
+      <div class="stat-card"><div class="stat-lbl">กำลังดำเนินการ</div><div class="stat-val" id="st-prog">0</div></div>
+      <div class="stat-card grn"><div class="stat-lbl">แก้ไขแล้ว</div><div class="stat-val" id="st-res">0</div></div>
+      <div class="stat-card red"><div class="stat-lbl">ฉุกเฉิน</div><div class="stat-val" id="st-urg">0</div></div>
+    </div>
+    <div class="inc-hdr">
+      <div class="filter-row">
+        <button class="flt on" onclick="sflt('all',this)">ทั้งหมด</button>
+        <button class="flt" onclick="sflt('pending',this)">รอดำเนินการ</button>
+        <button class="flt" onclick="sflt('in-progress',this)">กำลังดำเนินการ</button>
+        <button class="flt" onclick="sflt('resolved',this)">แก้ไขแล้ว</button>
+        <button class="flt" onclick="sflt('urgent',this)">ฉุกเฉิน</button>
+      </div>
+    </div>
+    <div id="s-inc-list" class="inc-list"></div>
+  </div>
+
+  <!-- STAFF CHAT TAB -->
+  <div id="stab-chat" style="display:none;flex:1;">
+    <div class="chat-layout" style="height:calc(100vh - 120px);">
+      <div class="chat-list">
+        <div class="cl-hdr">แขกทั้งหมด</div>
+        <div id="s-chat-list"></div>
+      </div>
+      <div class="chat-win" id="s-chat-win">
+        <div class="chat-empty">เลือกแขกเพื่อสนทนา</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL PANEL -->
+<div id="dpanel" class="dpanel">
+  <div class="dp-hdr">
+    <div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold);">รายละเอียดเหตุการณ์</div>
+      <div id="dp-id" style="font-size:11px;color:var(--gray);"></div>
+    </div>
+    <button class="m-close" onclick="closeDp()">✕</button>
+  </div>
+  <div class="dp-body">
+    <div class="dp-sec">
+      <div class="dp-sec-t">ข้อมูลเหตุการณ์</div>
+      <div class="dp-f"><div class="dp-fl">ประเภท</div><div class="dp-fv" id="dp-cat"></div></div>
+      <div class="dp-f"><div class="dp-fl">ความเร่งด่วน</div><div class="dp-fv" id="dp-pri"></div></div>
+      <div class="dp-f"><div class="dp-fl">หัวเรื่อง</div><div class="dp-fv" id="dp-title"></div></div>
+      <div class="dp-f"><div class="dp-fl">รายละเอียด</div><div class="dp-fv" id="dp-desc" style="line-height:1.6;"></div></div>
+    </div>
+    <div class="dp-sec">
+      <div class="dp-sec-t">ข้อมูลผู้รายงาน</div>
+      <div class="dp-f"><div class="dp-fl">ชื่อ</div><div class="dp-fv" id="dp-guest"></div></div>
+      <div class="dp-f"><div class="dp-fl">ห้อง</div><div class="dp-fv" id="dp-room"></div></div>
+      <div class="dp-f"><div class="dp-fl">วันที่รายงาน</div><div class="dp-fv" id="dp-date"></div></div>
+    </div>
+    <div class="dp-sec" id="dp-status-sec">
+      <div class="dp-sec-t">อัปเดตสถานะ</div>
+      <select class="sel-status" id="dp-status-sel" onchange="updateStatus(this.value)">
+        <option value="pending">รอดำเนินการ</option>
+        <option value="in-progress">กำลังดำเนินการ</option>
+        <option value="resolved">แก้ไขแล้ว</option>
+      </select>
+    </div>
+  </div>
+  <div class="dp-chat">
+    <div style="font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;">ข้อความ</div>
+    <div class="mini-msgs" id="dp-msgs"></div>
+    <div style="display:flex;gap:8px;">
+      <input id="dp-input" class="cinput" placeholder="พิมพ์ข้อความ..." onkeydown="if(event.key==='Enter')dpSend()">
+      <button class="btn btn-gold btn-sm" onclick="dpSend()">ส่ง</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== DATA LAYER =====
+const DB = {
+  get(k){ try{ return JSON.parse(localStorage.getItem(k))||null }catch(e){return null} },
+  set(k,v){ localStorage.setItem(k, JSON.stringify(v)) },
+  guests(){ return this.get('gph_guests')||{} },
+  saveGuests(d){ this.set('gph_guests',d) },
+  incidents(){ return this.get('gph_incidents')||[] },
+  saveIncidents(d){ this.set('gph_incidents',d) },
+  chats(){ return this.get('gph_chats')||{} },
+  saveChats(d){ this.set('gph_chats',d) }
+};
+
+// Default staff accounts
+const STAFF_ACCOUNTS = {
+  'STAFF001': { pass:'1234', name:'คุณสมชาย ใจดี', dept:'Maintenance' },
+  'STAFF002': { pass:'1234', name:'คุณสุดา รักดี', dept:'Housekeeping' }
+};
+
+let currentUser = null; // { role, id, name, room }
+let currentFilter = 'all';
+let currentChatRoom = null;
+let dpIncId = null;
+
+// ===== SCREEN =====
+function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+function openOverlay(id){ document.getElementById(id).classList.add('open'); }
+function closeOverlay(id){ document.getElementById(id).classList.remove('open'); }
+function swOv(a,b){ closeOverlay(a); openOverlay(b); }
+
+// ===== NOTIFICATION =====
+function notify(msg){
+  const n = document.createElement('div');
+  n.className='notif'; n.textContent=msg;
+  document.body.appendChild(n);
+  setTimeout(()=>n.remove(), 3200);
+}
+
+// ===== AUTH =====
+function guestLogin(){
+  const room = document.getElementById('gl-room').value.trim();
+  const pass = document.getElementById('gl-pass').value;
+  const msg = document.getElementById('gl-msg');
+  if(!room||!pass){ msg.innerHTML='<div class="errmsg">กรุณากรอกข้อมูลให้ครบ</div>'; return; }
+  const guests = DB.guests();
+  if(!guests[room]){ msg.innerHTML='<div class="errmsg">ไม่พบหมายเลขห้องนี้ กรุณาลงทะเบียน</div>'; return; }
+  if(guests[room].pass !== pass){ msg.innerHTML='<div class="errmsg">รหัสผ่านไม่ถูกต้อง</div>'; return; }
+  currentUser = { role:'guest', id:room, name:guests[room].name, room };
+  closeOverlay('ov-guest-login');
+  document.getElementById('g-hdr-name').textContent = guests[room].name + ' · ห้อง ' + room;
+  loadGuestApp();
+  show('guest-app');
+}
+function guestReg(){
+  const name = document.getElementById('gr-name').value.trim();
+  const room = document.getElementById('gr-room').value.trim();
+  const pass = document.getElementById('gr-pass').value;
+  const msg = document.getElementById('gr-msg');
+  if(!name||!room||!pass){ msg.innerHTML='<div class="errmsg">กรุณากรอกข้อมูลให้ครบ</div>'; return; }
+  if(pass.length < 4){ msg.innerHTML='<div class="errmsg">รหัสผ่านต้องมีอย่างน้อย 4 ตัวอักษร</div>'; return; }
+  const guests = DB.guests();
+  if(guests[room]){ msg.innerHTML='<div class="errmsg">หมายเลขห้องนี้ถูกลงทะเบียนแล้ว</div>'; return; }
+  guests[room] = { name, pass };
+  DB.saveGuests(guests);
+  msg.innerHTML='<div class="okmsg">ลงทะเบียนสำเร็จ! กรุณาเข้าสู่ระบบ</div>';
+  setTimeout(()=>swOv('ov-guest-reg','ov-guest-login'), 1400);
+}
+function staffLogin(){
+  const id = document.getElementById('sl-id').value.trim().toUpperCase();
+  const pass = document.getElementById('sl-pass').value;
+  const msg = document.getElementById('sl-msg');
+  if(!id||!pass){ msg.innerHTML='<div class="errmsg">กรุณากรอกข้อมูลให้ครบ</div>'; return; }
+  if(!STAFF_ACCOUNTS[id]){ msg.innerHTML='<div class="errmsg">ไม่พบรหัสประจำตัวนี้</div>'; return; }
+  if(STAFF_ACCOUNTS[id].pass !== pass){ msg.innerHTML='<div class="errmsg">รหัสผ่านไม่ถูกต้อง</div>'; return; }
+  currentUser = { role:'staff', id, name:STAFF_ACCOUNTS[id].name, dept:STAFF_ACCOUNTS[id].dept };
+  closeOverlay('ov-staff-login');
+  document.getElementById('s-hdr-name').textContent = STAFF_ACCOUNTS[id].name + ' · ' + STAFF_ACCOUNTS[id].dept;
+  loadStaffApp();
+  show('staff-app');
+}
+function logout(){
+  currentUser = null; currentChatRoom = null; dpIncId = null;
+  closeDp();
+  document.querySelectorAll('.finput').forEach(i=>i.value='');
+  document.querySelectorAll('[id$="-msg"]').forEach(m=>m.innerHTML='');
+  show('landing');
+}
+
+// ===== TABS =====
+function gTab(tab, btn){
+  document.querySelectorAll('#guest-app .tabbt').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  ['report','history','chat'].forEach(t=>{
+    const el = document.getElementById('gtab-'+t);
+    if(el) el.style.display = t===tab ? (t==='chat'?'flex':'block') : 'none';
+  });
+  if(tab==='history') renderGuestHistory();
+  if(tab==='chat') renderGuestChatList();
+}
+function sTab(tab, btn){
+  document.querySelectorAll('#staff-app .tabbt').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  ['incidents','chat'].forEach(t=>{
+    const el = document.getElementById('stab-'+t);
+    if(el) el.style.display = t===tab ? (t==='chat'?'flex':'block') : 'none';
+  });
+  if(tab==='incidents') renderStaffIncidents();
+  if(tab==='chat') renderStaffChatList();
+}
+
+// ===== REPORT =====
+function selCat(el, val){
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+  document.getElementById('inc-cat').value = val;
+}
+function selPri(el, val){
+  document.querySelectorAll('.pri-btn').forEach(b=>b.classList.remove('sel','urg-sel'));
+  el.classList.add(val==='ฉุกเฉิน'?'urg-sel':'sel');
+  document.getElementById('inc-pri').value = val;
+}
+function submitReport(){
+  const cat = document.getElementById('inc-cat').value;
+  const pri = document.getElementById('inc-pri').value;
+  const title = document.getElementById('inc-title').value.trim();
+  const detail = document.getElementById('inc-detail').value.trim();
+  const msg = document.getElementById('rpt-msg');
+  if(!cat){ msg.innerHTML='<div class="errmsg">กรุณาเลือกประเภทเหตุการณ์</div>'; return; }
+  if(!pri){ msg.innerHTML='<div class="errmsg">กรุณาเลือกระดับความเร่งด่วน</div>'; return; }
+  if(!title){ msg.innerHTML='<div class="errmsg">กรุณากรอกหัวเรื่อง</div>'; return; }
+  if(!detail){ msg.innerHTML='<div class="errmsg">กรุณากรอกรายละเอียด</div>'; return; }
+  const incs = DB.incidents();
+  const id = 'INC-' + Date.now().toString(36).toUpperCase();
+  incs.push({ id, cat, pri, title, detail, room:currentUser.room, guest:currentUser.name, status:'pending', date: new Date().toLocaleString('th-TH'), ts: Date.now() });
+  DB.saveIncidents(incs);
+  // Clear form
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('sel'));
+  document.querySelectorAll('.pri-btn').forEach(b=>b.classList.remove('sel','urg-sel'));
+  document.getElementById('inc-cat').value='';
+  document.getElementById('inc-pri').value='';
+  document.getElementById('inc-title').value='';
+  document.getElementById('inc-detail').value='';
+  msg.innerHTML='<div class="okmsg">✓ ส่งรายงานเรียบร้อยแล้ว รหัส: '+id+'</div>';
+  notify('ส่งรายงานเรียบร้อย · ' + id);
+  setTimeout(()=>msg.innerHTML='', 4000);
+}
+
+// ===== GUEST HISTORY =====
+function renderGuestHistory(){
+  const list = document.getElementById('g-history-list');
+  const incs = DB.incidents().filter(i=>i.room===currentUser.room).sort((a,b)=>b.ts-a.ts);
+  if(!incs.length){ list.innerHTML=`<div class="empty"><div class="empty-ic">📋</div><div class="empty-t">ยังไม่มีรายงาน</div><div class="empty-s">รายงานเหตุการณ์แรกของคุณได้เลย</div></div>`; return; }
+  list.innerHTML = incs.map(i=>{
+    const sc = i.status==='resolved'?'res':i.pri==='ฉุกเฉิน'?'urg':'pend';
+    const bc = i.status==='resolved'?'badge-res':i.pri==='ฉุกเฉิน'?'badge-urg':'badge-pend';
+    const sl = i.status==='resolved'?'แก้ไขแล้ว':i.status==='in-progress'?'กำลังดำเนินการ':'รอดำเนินการ';
+    return `<div class="icard ${sc}">
+      <div class="itop">
+        <div><div class="iid">${i.id}</div><div class="ititle">${i.title}</div></div>
+        <span class="badge ${bc}">${sl}</span>
+      </div>
+      <div class="imeta"><span>📂 ${i.cat}</span><span>⚡ ${i.pri}</span><span>🕐 ${i.date}</span></div>
+      <div class="idesc">${i.detail}</div>
+    </div>`;
+  }).join('');
+}
+
+// ===== GUEST CHAT =====
+function renderGuestChatList(){
+  const list = document.getElementById('g-chat-list');
+  const chats = DB.chats();
+  const myChats = Object.keys(chats).filter(k=>k.startsWith(currentUser.room+':'));
+  if(!myChats.length){ list.innerHTML='<div style="padding:20px;font-size:12px;color:var(--gray);text-align:center;">ยังไม่มีการสนทนา<br>เจ้าหน้าที่จะติดต่อมาหลังรับรายงาน</div>'; return; }
+  list.innerHTML = myChats.map(k=>{
+    const [,staffId] = k.split(':');
+    const msgs = chats[k]||[];
+    const last = msgs[msgs.length-1];
+    const unread = msgs.filter(m=>m.from!==currentUser.room&&!m.read).length;
+    return `<div class="ci-item ${currentChatRoom===k?'on':''}" onclick="openGuestChat('${k}','${staffId}')">
+      ${unread?`<span class="unread">${unread}</span>`:''}
+      <div class="ci-name">${STAFF_ACCOUNTS[staffId]?.name||staffId}</div>
+      <div class="ci-sub">${last?last.text.substring(0,30)+'...':'เริ่มสนทนา'}</div>
+    </div>`;
+  }).join('');
+}
+function openGuestChat(key, staffId){
+  currentChatRoom = key;
+  const chats = DB.chats();
+  const msgs = chats[key]||[];
+  msgs.forEach(m=>{ if(m.from!==currentUser.room) m.read=true; });
+  chats[key]=msgs; DB.saveChats(chats);
+  const win = document.getElementById('g-chat-win');
+  win.innerHTML=`
+    <div class="cwin-hdr"><div class="cwin-name">${STAFF_ACCOUNTS[staffId]?.name||staffId}</div><div class="cwin-sub">${STAFF_ACCOUNTS[staffId]?.dept||''}</div></div>
+    <div class="cmessages" id="gc-msgs"></div>
+    <div class="cinput-row">
+      <input id="gc-input" class="cinput" placeholder="พิมพ์ข้อความ..." onkeydown="if(event.key==='Enter')gSend('${key}')">
+      <button class="btn btn-gold btn-sm" onclick="gSend('${key}')">ส่ง</button>
+    </div>`;
+  renderGuestMsgs(key);
+  renderGuestChatList();
+  updateGuestUnread();
+}
+function renderGuestMsgs(key){
+  const el = document.getElementById('gc-msgs'); if(!el) return;
+  const msgs = (DB.chats()[key]||[]);
+  el.innerHTML = msgs.map(m=>{
+    const mine = m.from===currentUser.room;
+    return `<div class="cmsg ${mine?'mine':'theirs'}"><div class="cbubble">${m.text}</div><div class="ctime">${m.time}</div></div>`;
+  }).join('');
+  el.scrollTop=el.scrollHeight;
+}
+function gSend(key){
+  const inp = document.getElementById('gc-input'); if(!inp) return;
+  const text = inp.value.trim(); if(!text) return;
+  const chats = DB.chats();
+  if(!chats[key]) chats[key]=[];
+  chats[key].push({ from:currentUser.room, text, time:new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}), read:false });
+  DB.saveChats(chats);
+  inp.value='';
+  renderGuestMsgs(key);
+}
+function updateGuestUnread(){
+  const chats = DB.chats();
+  let total = 0;
+  Object.keys(chats).filter(k=>k.startsWith(currentUser.room+':')).forEach(k=>{
+    total += chats[k].filter(m=>m.from!==currentUser.room&&!m.read).length;
+  });
+  const el = document.getElementById('g-unread');
+  if(total>0){ el.style.display='inline'; el.textContent=total; }
+  else el.style.display='none';
+}
+function loadGuestApp(){
+  updateGuestUnread();
+  setInterval(()=>{ if(currentUser?.role==='guest'){ updateGuestUnread(); if(currentChatRoom) renderGuestMsgs(currentChatRoom); }}, 2000);
+}
+
+// ===== STAFF INCIDENTS =====
+function renderStaffIncidents(){
+  const incs = DB.incidents().filter(i=>{
+    if(currentFilter==='all') return true;
+    if(currentFilter==='urgent') return i.pri==='ฉุกเฉิน';
+    return i.status===currentFilter;
+  }).sort((a,b)=>b.ts-a.ts);
+  updateStats();
+  const list = document.getElementById('s-inc-list');
+  if(!incs.length){ list.innerHTML=`<div class="empty"><div class="empty-ic">📋</div><div class="empty-t">ไม่พบเหตุการณ์</div><div class="empty-s">ยังไม่มีรายงานเข้ามา</div></div>`; return; }
+  list.innerHTML = incs.map(i=>{
+    const sc = i.status==='resolved'?'res':i.pri==='ฉุกเฉิน'?'urg':'pend';
+    const bc = i.status==='resolved'?'badge-res':i.pri==='ฉุกเฉิน'?'badge-urg':'badge-pend';
+    const sl = i.status==='resolved'?'แก้ไขแล้ว':i.status==='in-progress'?'กำลังดำเนินการ':'รอดำเนินการ';
+    return `<div class="icard ${sc}" onclick="openDp('${i.id}')">
+      <div class="itop">
+        <div><div class="iid">${i.id}</div><div class="ititle">${i.title}</div></div>
+        <span class="badge ${bc}">${sl}</span>
+      </div>
+      <div class="imeta"><span>📂 ${i.cat}</span><span>⚡ ${i.pri}</span><span>🏨 ห้อง ${i.room}</span><span>👤 ${i.guest}</span><span>🕐 ${i.date}</span></div>
+      <div class="idesc">${i.detail}</div>
+      <div class="iacts" onclick="event.stopPropagation()">
+        <button class="btn btn-outline btn-sm" onclick="openDp('${i.id}')">รายละเอียด / แชท</button>
+        ${i.status!=='resolved'?`<button class="btn btn-sm" style="background:rgba(26,107,60,.3);color:#2ecc71;border:1px solid rgba(26,107,60,.4)" onclick="quickResolve('${i.id}')">✓ แก้ไขแล้ว</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+function updateStats(){
+  const incs = DB.incidents();
+  document.getElementById('st-total').textContent=incs.length;
+  document.getElementById('st-pend').textContent=incs.filter(i=>i.status==='pending').length;
+  document.getElementById('st-prog').textContent=incs.filter(i=>i.status==='in-progress').length;
+  document.getElementById('st-res').textContent=incs.filter(i=>i.status==='resolved').length;
+  document.getElementById('st-urg').textContent=incs.filter(i=>i.pri==='ฉุกเฉิน').length;
+}
+function sflt(f, btn){
+  currentFilter=f;
+  document.querySelectorAll('.flt').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderStaffIncidents();
+}
+function quickResolve(id){
+  const incs = DB.incidents();
+  const i = incs.find(x=>x.id===id); if(!i) return;
+  i.status='resolved';
+  DB.saveIncidents(incs);
+  notify('อัปเดตสถานะแล้ว · '+id);
+  renderStaffIncidents();
+}
+
+// ===== DETAIL PANEL =====
+function openDp(id){
+  dpIncId = id;
+  const incs = DB.incidents();
+  const i = incs.find(x=>x.id===id); if(!i) return;
+  document.getElementById('dp-id').textContent = id;
+  document.getElementById('dp-cat').textContent = i.cat;
+  document.getElementById('dp-pri').textContent = i.pri;
+  document.getElementById('dp-title').textContent = i.title;
+  document.getElementById('dp-desc').textContent = i.detail;
+  document.getElementById('dp-guest').textContent = i.guest;
+  document.getElementById('dp-room').textContent = 'ห้อง ' + i.room;
+  document.getElementById('dp-date').textContent = i.date;
+  document.getElementById('dp-status-sel').value = i.status;
+  if(currentUser.role!=='staff') document.getElementById('dp-status-sec').style.display='none';
+  renderDpMsgs(id);
+  document.getElementById('dpanel').classList.add('open');
+}
+function closeDp(){
+  document.getElementById('dpanel').classList.remove('open');
+  dpIncId=null;
+}
+function renderDpMsgs(incId){
+  const chats = DB.chats();
+  const key = getKey(incId);
+  const msgs = chats[key]||[];
+  const el = document.getElementById('dp-msgs');
+  el.innerHTML = msgs.map(m=>{
+    const mine = currentUser.role==='staff'? m.from!==getRoom(incId) : m.from===getRoom(incId);
+    return `<div class="cmsg ${mine?'mine':'theirs'}"><div class="cbubble">${m.text}</div><div class="ctime">${m.time}</div></div>`;
+  }).join('');
+  el.scrollTop=el.scrollHeight;
+}
+function getRoom(incId){ const i = DB.incidents().find(x=>x.id===incId); return i?i.room:''; }
+function getKey(incId){ const room=getRoom(incId); return room+':'+currentUser.id; }
+function dpSend(){
+  const inp = document.getElementById('dp-input');
+  const text = inp.value.trim(); if(!text||!dpIncId) return;
+  const chats = DB.chats();
+  const key = getKey(dpIncId);
+  if(!chats[key]) chats[key]=[];
+  chats[key].push({ from:currentUser.id, text, time:new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}), read:false });
+  DB.saveChats(chats);
+  inp.value='';
+  renderDpMsgs(dpIncId);
+  // Open chat for guest if not exists — auto create chat thread
+  notify('ส่งข้อความแล้ว');
+}
+function updateStatus(val){
+  if(!dpIncId) return;
+  const incs = DB.incidents();
+  const i = incs.find(x=>x.id===dpIncId); if(!i) return;
+  i.status=val;
+  DB.saveIncidents(incs);
+  notify('อัปเดตสถานะ: '+{pending:'รอดำเนินการ','in-progress':'กำลังดำเนินการ',resolved:'แก้ไขแล้ว'}[val]);
+  renderStaffIncidents();
+}
+
+// ===== STAFF CHAT =====
+function renderStaffChatList(){
+  const list = document.getElementById('s-chat-list');
+  const guests = DB.guests();
+  // Show all guests and allow staff to start chat
+  const rooms = Object.keys(guests);
+  if(!rooms.length){ list.innerHTML='<div style="padding:20px;font-size:12px;color:var(--gray);text-align:center;">ยังไม่มีแขกลงทะเบียน</div>'; return; }
+  const chats = DB.chats();
+  list.innerHTML = rooms.map(room=>{
+    const key = room+':'+currentUser.id;
+    const msgs = chats[key]||[];
+    const unread = msgs.filter(m=>m.from===room&&!m.read).length;
+    const last = msgs[msgs.length-1];
+    return `<div class="ci-item ${currentChatRoom===key?'on':''}" onclick="openStaffChat('${room}')">
+      ${unread?`<span class="unread">${unread}</span>`:''}
+      <div class="ci-name">${guests[room].name}</div>
+      <div class="ci-sub">ห้อง ${room} ${last?'· '+last.text.substring(0,20)+'...':''}</div>
+    </div>`;
+  }).join('');
+  updateStaffUnread();
+}
+function openStaffChat(room){
+  const key = room+':'+currentUser.id;
+  currentChatRoom = key;
+  const chats = DB.chats();
+  const msgs = chats[key]||[];
+  msgs.forEach(m=>{ if(m.from===room) m.read=true; });
+  chats[key]=msgs; DB.saveChats(chats);
+  const guests = DB.guests();
+  const gname = guests[room]?.name||room;
+  const win = document.getElementById('s-chat-win');
+  win.innerHTML=`
+    <div class="cwin-hdr"><div class="cwin-name">${gname}</div><div class="cwin-sub">ห้อง ${room}</div></div>
+    <div class="cmessages" id="sc-msgs"></div>
+    <div class="cinput-row">
+      <input id="sc-input" class="cinput" placeholder="พิมพ์ข้อความถึง ${gname}..." onkeydown="if(event.key==='Enter')sSend('${key}','${room}')">
+      <button class="btn btn-gold btn-sm" onclick="sSend('${key}','${room}')">ส่ง</button>
+    </div>`;
+  renderStaffMsgs(key, room);
+  renderStaffChatList();
+}
+function renderStaffMsgs(key, room){
+  const el = document.getElementById('sc-msgs'); if(!el) return;
+  const msgs = (DB.chats()[key]||[]);
+  el.innerHTML = msgs.map(m=>{
+    const mine = m.from!==room;
+    return `<div class="cmsg ${mine?'mine':'theirs'}"><div class="cbubble">${m.text}</div><div class="ctime">${m.time}</div></div>`;
+  }).join('');
+  el.scrollTop=el.scrollHeight;
+}
+function sSend(key, room){
+  const inp = document.getElementById('sc-input'); if(!inp) return;
+  const text = inp.value.trim(); if(!text) return;
+  const chats = DB.chats();
+  if(!chats[key]) chats[key]=[];
+  chats[key].push({ from:currentUser.id, text, time:new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}), read:false });
+  DB.saveChats(chats);
+  inp.value='';
+  renderStaffMsgs(key, room);
+}
+function updateStaffUnread(){
+  const chats = DB.chats();
+  let total = 0;
+  Object.keys(chats).filter(k=>k.endsWith(':'+currentUser.id)).forEach(k=>{
+    const room = k.split(':')[0];
+    total += chats[k].filter(m=>m.from===room&&!m.read).length;
+  });
+  const el = document.getElementById('s-unread');
+  if(total>0){ el.style.display='inline'; el.textContent=total; }
+  else el.style.display='none';
+}
+function loadStaffApp(){
+  renderStaffIncidents();
+  setInterval(()=>{ if(currentUser?.role==='staff'){
+    renderStaffIncidents();
+    updateStaffUnread();
+    if(currentChatRoom){
+      const [room] = currentChatRoom.split(':');
+      renderStaffMsgs(currentChatRoom, room);
+    }
+    if(dpIncId) renderDpMsgs(dpIncId);
+  }}, 2500);
+}
+
+// ===== SEED DEMO DATA =====
+function seedDemo(){
+  if(DB.incidents().length>0) return;
+  const guests = DB.guests();
+  if(!guests['301']){ guests['301']={name:'คุณวีระ สมใจ',pass:'1234'}; }
+  if(!guests['502']){ guests['502']={name:'Ms. Sarah Johnson',pass:'1234'}; }
+  DB.saveGuests(guests);
+  const now = Date.now();
+  DB.saveIncidents([
+    { id:'INC-DEMO01', cat:'ระบบไฟฟ้า', pri:'ฉุกเฉิน', title:'ไฟดับในห้องน้ำ', detail:'ไฟในห้องน้ำดับกะทันหัน ไม่สามารถใช้งานได้ ลองปิดเปิดสวิทช์แล้วแต่ยังไม่ติด', room:'301', guest:'คุณวีระ สมใจ', status:'pending', date:'18/5/2569 09:30', ts:now-3600000 },
+    { id:'INC-DEMO02', cat:'แอร์', pri:'เร่งด่วน', title:'แอร์ไม่เย็น', detail:'เครื่องปรับอากาศในห้องพักทำงานแต่ไม่เย็น อุณหภูมิตั้ง 18 แต่ไม่รู้สึกเย็นเลย', room:'502', guest:'Ms. Sarah Johnson', status:'in-progress', date:'18/5/2569 10:15', ts:now-1800000 },
+    { id:'INC-DEMO03', cat:'อินเทอร์เน็ต', pri:'ปกติ', title:'WiFi ช้ามาก', detail:'สัญญาณ WiFi ในห้องช้ามากใช้งานไม่ได้ รหัส GRAND-PALACE ไม่สามารถโหลดเว็บได้', room:'301', guest:'คุณวีระ สมใจ', status:'resolved', date:'17/5/2569 14:00', ts:now-86400000 }
+  ]);
+}
+seedDemo();
+</script>
+</body>
+</html>
