@@ -423,7 +423,7 @@ body{font-family:'Jost',sans-serif;background:var(--dark);color:var(--white);min
   </div>
 </div>
 
-<script>
+<scrip>
 // ===== DATA LAYER =====
 const DB = {
   get(k){ try{ return JSON.parse(localStorage.getItem(k))||null }catch(e){return null} },
@@ -868,6 +868,31 @@ function seedDemo(){
   ]);
 }
 seedDemo();
+
+</script>
+  872: <script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyBWwpmfaDxetaZlnsnuB2kLq2x_UQZY378",
+    authDomain: "grand-palace-hotel-a6875.firebaseapp.com",
+    databaseURL: "https://grand-palace-hotel-a6875-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "grand-palace-hotel-a6875",
+    storageBucket: "grand-palace-hotel-a6875.firebasestorage.app",
+    messagingSenderId: "646774389909",
+    appId: "1:646774389909:web:949776d417b90652ea2f9c",
+    measurementId: "G-XZQQK06KNQ"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
 </script>
 </body>
 </html>
