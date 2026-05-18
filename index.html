@@ -869,18 +869,14 @@ function seedDemo(){
 }
 seedDemo();
 
-</script>
-  872: <script type="module">
-  // Import the functions you need from the SDKs you need
+<script type="module">
+  // 1. ดึงตัวจัดการระบบและตัวฐานข้อมูล Realtime Database มาใช้งาน
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+  import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  // 2. ค่าคอนฟิกโปรเจกต์ของคุณ
   const firebaseConfig = {
-    apiKey: "AIzaSyBWwpmfaDxetaZlnsnuB2kLq2x_UQZY378",
+    apiKey: "AIzaSyBwwpmfaDxetaZlnsnuB2kLq2x_UQZY378",
     authDomain: "grand-palace-hotel-a6875.firebaseapp.com",
     databaseURL: "https://grand-palace-hotel-a6875-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "grand-palace-hotel-a6875",
@@ -888,22 +884,35 @@ seedDemo();
     messagingSenderId: "646774389909",
     appId: "1:646774389909:web:949776d417b90652ea2f9c",
     measurementId: "G-XZQQK06KNQ"
-    
   };
-  
 
-  // Initialize Firebase
+  // 3. เริ่มต้นเปิดใช้งานเชื่อมต่อ
   const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-  const database = getDatabase(app); // <-- เพิ่มบรรทัดนี้ เพื่อสร้างตัวแปรฐานข้อมูลไปใช้งาน
-  // ดึงข้อมูลมาแสดงทันทีเมื่อมีการเปลี่ยนแปลงในฐานข้อมูล
-  const chatRef = ref(database, 'chats');
-  onValue(chatRef, (snapshot) => {
-  const data = snapshot.val();
-  console.log("ข้อมูลล่าสุดจาก Firebase:", data);
-  // เอาข้อมูล data ที่ได้ไปวนลูปเพื่อ Render แสดงบนหน้าจอต่อได้เลย
-});
-    
+  const database = getDatabase(app);
+
+  // ทำการดึงตัวแปรฐานข้อมูลออกไปให้ฟังก์ชันอื่นๆ ในหน้าเว็บดึงไปใช้เซฟข้อมูลได้
+  window.db_firebase = database;
+  window.ref_firebase = ref;
+  window.set_firebase = set;
+  window.push_firebase = push;
+  window.onValue_firebase = onValue;
+
+  console.log("Firebase Connected & Ready!");
+  // ตัวอย่าง: เวลาผูกกับปุ่มกดส่งรายงานแจ้งเหตุ
+function uploadIncidentToFirebase(category, priority, title, detail) {
+  const incidentRef = window.ref_firebase(window.db_firebase, 'incidents');
+  const newIncident = window.push_firebase(incidentRef);
+  
+  window.set_firebase(newIncident, {
+    cat: category,
+    pri: priority,
+    title: title,
+    detail: detail,
+    timestamp: Date.now()
+  }).then(() => {
+    console.log("ส่งข้อมูลเข้า Firebase สำเร็จ!");
+  });
+}
 </script>
 </body>
 </html>
