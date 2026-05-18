@@ -869,20 +869,6 @@ function seedDemo(){
 }
 seedDemo();
 
-function seedDemo(){
-  if(DB.incidents().length > 0) return;
-  const guests = DB.guests();
-  if(!guests['301']){ guests['301'] = { name: 'คุณสมใจ สมใจ', pass: '1234' }; }
-  if(!guests['502']){ guests['502'] = { name: 'Ms. Sarah Johnson', pass: '1234' }; }
-  DB.saveGuests(guests);
-  const now = Date.now();
-  DB.saveIncidents([
-    { id: 'INC-DEMO01', cat: 'ระบบไฟฟ้า', pri: 'ฉุกเฉิน', title: 'ไฟดับในห้องน้ำ', detail: 'ไฟในห้องน้ำดับกะทันหัน ไม่สามารถใช้งานได้ ลองเปิดปิดสวิตช์แล้วไม่หาย' },
-    { id: 'INC-DEMO02', cat: 'แอร์', pri: 'เร่งด่วน', title: 'แอร์ไม่เย็น', detail: 'เครื่องปรับอากาศในห้องพักทำงานแต่ไม่เย็น อุณหภูมิตั้ง 18 แต่ไม่รู้สึกเย็นเลย' },
-    { id: 'INC-DEMO03', cat: 'อินเทอร์เน็ต', pri: 'ปกติ', title: 'WiFi ช้ามาก', detail: 'สัญญาณ WiFi ในห้องพักมีแต่ใช้งานไม่ได้ รหัส GRAND-PALACE ไม่สามารถล็อกอินได้' }
-  ]);
-}
-seedDemo();
 </script> <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
   import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
